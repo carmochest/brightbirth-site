@@ -476,6 +476,11 @@ html.boot *{transition:none!important;animation-duration:.001s!important;animati
 .stats .st .c,.stats .st small,.lab,.field>span,.gnote,.gavg,.kv,.hint,.fine,.sl,.who,.dur{font-size:13px}
 .gnote{line-height:1.4}
 .hnav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.wrap #feedcard .btn.big{font-size:17px;letter-spacing:0;line-height:1.25;margin-top:0;font-variant-numeric:normal}
+.bft{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bfs{background:var(--panel-solid);border-radius:16px;padding:10px 8px;min-height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.bfs b{font-size:14px;font-weight:600}.bfs span{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}.bfs small{font-size:12.5px;color:var(--ink-2)}
+.bfs.on{background:var(--accent);color:var(--on-accent);box-shadow:none}.bfs.on small{color:inherit}
 
 .statebtn{flex:1;min-height:52px;border-radius:18px;background:var(--on);color:var(--on-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 12px;font-size:15px;line-height:1.2}
 .statebtn b{font-weight:600;white-space:nowrap}.statebtn small{font-size:12px;opacity:.75}
@@ -525,7 +530,7 @@ html.boot *{transition:none!important;animation-duration:.001s!important;animati
 <script>
 /* ---------- shared sync ---------- */
 
-const APP_NAME="Bright Birth", APP_VERSION="0.19";
+const APP_NAME="Bright Birth", APP_VERSION="0.20";
 const PRICE={mo:"$7.99",yr:"$39.99",yrMo:"$3.33",save:"58%"};
 const NT="";   // stands for the child's name in every string; swapped in at the last moment
 const escH=t=>String(t==null?"":t).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[ch]);
@@ -927,11 +932,11 @@ function weightBlock(age,today,compact){ const th=U.lang==="th", w=weights(), l=
   const pct=vd&&vd.pct!==null?(th?`เปอร์เซ็นไทล์ที่ ${vd.pct}`:`${ordinal(vd.pct)} percentile`):"";
   const rows=w.slice().reverse().slice(0,compact?3:14).map(x=>{ const p=w[w.indexOf(x)-1]; const g=p?Math.round((x.kg-p.kg)*1000):null; const note=S.birth&&x.d===S.birth?(th?"แรกเกิด":"birth"):g!==null?Wd(g):""; return `<div class="fl wrow" data-wedit="${x.d}" role="button"><span class="t">${x.d===today?(th?"วันนี้":"Today"):niceDate(x.d)}</span><span class="wkg">${W(x.kg)}</span><span class="wdl">${note}</span><button class="x" data-wdel="${x.d}" title="${ui("del")}">×</button></div>`; }).join("");
   return `<div class="ghead"><div class="lab">${th?"น้ำหนัก":"Weight"}</div><button type="button" class="glink add" data-weighopen>+ ${th?"น้ำหนัก":"Weight"}</button></div><div class="wtop"><div class="big">${l?Wbig(l.kg):"—"}</div>${verdict}<span class="wmeta">${when}</span><span class="wmeta r">${pct}</span></div>${U.wpick?wpicker():""}${rows?`<div class="wlist">${rows}</div>`:""}`; }
-function picker(){ const bottle=U.pick.mode==="bottle", solids=U.pick.mode==="solids"; const sw=U.pick.mode==="sleep"||U.pick.mode==="wake"||U.pick.mode==="pee"||U.pick.mode==="poo"; const ed=U.pick.edit; const late=(()=>{ const n=nowAbs(), h=toH(U.tm||nowHM()); return Math.round((h>n?n+24-h:n-h)*60); })();
+function picker(){ if(U.pick.mode==="breast"&&!U.pick.edit) bftSync(); const bottle=U.pick.mode==="bottle", solids=U.pick.mode==="solids"; const sw=U.pick.mode==="sleep"||U.pick.mode==="wake"||U.pick.mode==="pee"||U.pick.mode==="poo"; const ed=U.pick.edit; const late=(()=>{ const n=nowAbs(), h=toH(U.tm||nowHM()); return Math.round((h>n?n+24-h:n-h)*60); })();
   const stp=stpH;
   return `<div class="pick">
   <div class="lab">${ed?ui("edit"):ui("log")} · ${sw?({sleep:"😴 "+tr("Asleep"),wake:"👀 "+tr("Awake"),pee:"💧 "+ui("pee"),poo:"💩 "+ui("poo")})[U.pick.mode]:bottle?tr("Bottle"):solids?ui("solids"):tr("Breastfeed")}</div>
-  ${sw?"":solids?`<div class="seg sm" data-set="portion">${SOLID.map(([k,v])=>`<button data-v="${k}" class="${(U.portion||"medium")===k?"on":""}">${U.lang==="th"?({small:"น้อย",medium:"ปานกลาง",large:"มาก"})[k]:k}</button>`).join("")}</div>`:bottle?stp(volU(),usUnits()?toOz(U.ml):U.ml,"ml",usUnits()?0.5:10,"")+(()=>{ if(ed) return ""; const sg=feedSug(), us=usualMl(), th=U.lang==="th", p=[]; if(us) p.push((th?"ปกติ ~":"usual ~")+volN(us)); if(sg) p.push((th?"แนะนำ ~":"guide ~")+volN(sg)); return p.length?`<div style="margin:-6px 0 -2px 14px;color:var(--accent-ink);font-size:11.5px;font-weight:600">${p.join(" · ")} ${volU()}</div>`:""; })():stp(ui("minutes"),U.min,"min",5,"")}
+  ${sw?"":solids?`<div class="seg sm" data-set="portion">${SOLID.map(([k,v])=>`<button data-v="${k}" class="${(U.portion||"medium")===k?"on":""}">${U.lang==="th"?({small:"น้อย",medium:"ปานกลาง",large:"มาก"})[k]:k}</button>`).join("")}</div>`:bottle?stp(volU(),usUnits()?toOz(U.ml):U.ml,"ml",usUnits()?0.5:10,"")+(()=>{ if(ed) return ""; const sg=feedSug(), us=usualMl(), th=U.lang==="th", p=[]; if(us) p.push((th?"ปกติ ~":"usual ~")+volN(us)); if(sg) p.push((th?"แนะนำ ~":"guide ~")+volN(sg)); return p.length?`<div style="margin:-6px 0 -2px 14px;color:var(--accent-ink);font-size:11.5px;font-weight:600">${p.join(" · ")} ${volU()}</div>`:""; })():(ed?"":bftRow())+stp(ui("minutes"),U.min,"min",5,"")}
   ${stp(sw||solids?ui("time"):(U.lang==="th"?"เริ่ม":"Started"),U.tm,"tm",5,late>=3&&!ed?`<em>${U.lang==="th"?`${late} นาทีที่แล้ว`:`${late} min ago`}</em>`:"")}${sw||solids?"":(()=>{ const h=toH(U.tm||nowHM())+(bottle?20:Math.max(5,U.min||15))/60; return `<div style="margin:-6px 0 -2px 14px;color:var(--ink-3);font-size:11.5px;font-weight:600">${U.lang==="th"?"เสร็จประมาณ ":"finished ~"}${fmtD(h)}</div>`; })()}
   <div class="go"><button class="btn quiet" data-pickclose>${ui("cancel")}</button><button class="btn primary" data-picksave>${ed?ui("save"):ui("log")}</button></div>
   ${ed?`<button class="btn quiet sm" data-delfeed="${ed.id}" style="justify-self:center">${ui("del")}</button>`:""}</div>`; }
@@ -993,7 +998,7 @@ function render(){
     </div>
     <details class="feedlog" ${U.logOpen?"open":""} id="feedlog"><summary><div class="logbtn"><span>${ui("feeds")(real.length,sleepTotal(tlog,nowA,!!T.ysw))}</span></div></summary><div>
       ${(()=>{ const rows=tlog.filter(x=>isFeed(x)||isNappy(x)||isSolids(x)||x.type==="sleep"||x.type==="wake").sort((a,b)=>toH(a.t)-toH(b.t)); if(T.ysw) rows.unshift({t:T.ysw.t,type:"sleep",who:T.ysw.who,carried:true}); const tog=rows.filter(x=>!isFeed(x)&&!isNappy(x)&&!isSolids(x)); const by=whoTag; const btns=x=>x.carried?`<span></span>`:`<button class="x" data-delfeed="${x.id}" title="${ui("del")}" aria-label="${ui("del")}">×</button>`; const rowOpen=x=>x.carried?"":` data-editfeed="${x.id}" role="button"`;
-        const html=rows.map(x=>{ if(isSolids(x)) return `<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>🥣 ${U.lang==="th"?"อาหารเสริม":"Solids"} · ${U.lang==="th"?({small:"น้อย",medium:"ปานกลาง",large:"มาก"})[x.portion||"medium"]:(x.portion||"medium")}${by(x)}</span>${btns(x)}</div>`; if(isNappy(x)) return `<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>${x.type==="pee"?"💧 "+ui("pee"):"💩 "+ui("poo")}${by(x)}</span>${btns(x)}</div>`; if(isFeed(x)) return `<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>${x.type==="breast"?"🤱 "+tr("Breast")+(x.min?" · "+x.min+" "+ui("minutes"):""):"🍼 "+tr("Bottle")+" · "+vol(x.ml||0)}${by(x)}</span>${btns(x)}</div>`;
+        const html=rows.map(x=>{ if(isSolids(x)) return `<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>🥣 ${U.lang==="th"?"อาหารเสริม":"Solids"} · ${U.lang==="th"?({small:"น้อย",medium:"ปานกลาง",large:"มาก"})[x.portion||"medium"]:(x.portion||"medium")}${by(x)}</span>${btns(x)}</div>`; if(isNappy(x)) return `<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>${x.type==="pee"?"💧 "+ui("pee"):"💩 "+ui("poo")}${by(x)}</span>${btns(x)}</div>`; if(isFeed(x)) return `<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>${x.type==="breast"?"🤱 "+tr("Breast")+(x.min?" · "+x.min+" "+ui("minutes"):"")+(x.l||x.r?" · L "+(x.l||0)+" R "+(x.r||0):""):"🍼 "+tr("Bottle")+" · "+vol(x.ml||0)}${by(x)}</span>${btns(x)}</div>`;
           const i=tog.indexOf(x), prev=tog[i-1], t0=x.carried?DAY_START:toH(x.t); if(x.carried) return `<div class="fl"><span class="t">${fmtD(DAY_START)}</span><span>😴 ${tr("Asleep")}<span class="dur"> · ${U.lang==="th"?"ตั้งแต่":"since"} ${tD(x.t)} · ${ui("lastNight")}</span>${sleeping&&i===tog.length-1?`<span class="dur"> · ${fmtDur((nowA-t0)*60)} ${ui("soFar")}</span>`:""}</span><span></span><span></span></div>`; let d=""; if(x.type==="wake"&&prev&&prev.type==="sleep") d=` · ${ui("slept")} ${fmtDur((toH(x.t)-(prev.carried?toH(prev.t)-24:toH(prev.t)))*60)}`; else if(x.type==="sleep"&&prev&&prev.type==="wake") d=` · ${ui("awakeFor")} ${fmtDur((toH(x.t)-toH(prev.t))*60)}`; if(x.type==="sleep"&&i===tog.length-1&&sleeping) d+=` · ${fmtDur((nowA-t0)*60)} ${ui("soFar")}`;
           return `<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>${x.type==="sleep"?"😴 "+tr("Asleep"):"👀 "+tr("Awake")}${x.carried?`<span class="who"> · ${ui("lastNight")}</span>`:""}<span class="dur">${d}</span>${x.carried?"":by(x)}</span>${btns(x)}</div>`; }); return rows.length?logOrder(rows,html):`<p class="hint" style="padding:6px 0">${ui("nothing")}</p>`; })()}
     </div></details>`
@@ -1057,7 +1062,7 @@ function sleepRowsFor(d,today,nowA){ const en=((L[d]&&L[d].entries)||[]).filter(
   return rows.map((x,i)=>{ const prev=rows[i-1]; let dur=""; const t0=x.carried?DAY_START:toH(x.t); if(x.type==="wake"&&prev&&prev.type==="sleep") dur=ui("slept")+" "+fmtDur((toH(x.t)-(prev.carried?DAY_START:toH(prev.t)))*60); else if(x.type==="sleep"&&prev&&prev.type==="wake") dur=ui("awakeFor")+" "+fmtDur((toH(x.t)-toH(prev.t))*60); if(x.type==="sleep"&&i===rows.length-1&&(d!==today||true)){ const m=(endA-t0)*60; if(m>0) dur=(dur?dur+" · ":"")+fmtDur(m)+(d===today?" "+ui("soFar"):" → 06:00"); } return Object.assign({},x,{dur}); }).filter(x=>!x.carried); }
 function dayRows(kind,d,today,nowA){ const en=(L[d]&&L[d].entries)||[]; if(kind==="milk") return en.filter(isFeed).sort((a,b)=>toH(a.t)-toH(b.t)); if(kind==="nappy") return en.filter(isNappy).sort((a,b)=>toH(a.t)-toH(b.t)); return sleepRowsFor(d,today,nowA); }
 function d7(kind,d,today,nowA,inner,todayRows){ if(d===today) return todayRows&&todayRows.length?`<details class="d7w" open><summary class="d7">${inner}</summary><div class="d7rows">${sheetRows(todayRows,"tap")}</div></details>`:`<div class="d7">${inner}</div>`; const rows=dayRows(kind,d,today,nowA); if(!rows.length) return `<div class="d7">${inner}</div>`; return `<details class="d7w"><summary class="d7">${inner}</summary><div class="d7rows">${sheetRows(rows,true)}</div></details>`; }
-function sheetRows(rows,ro){ const by=whoTag; const btns=x=>ro?`<span></span>`:`<button class="x" data-delfeed="${x.id}" title="${ui("del")}" aria-label="${ui("del")}">×</button>`; const rowOpen=x=>ro===true||!x.id?"":` data-editfeed="${x.id}" role="button"`; const lab=x=>isNappy(x)?(x.type==="pee"?"💧 "+ui("pee"):"💩 "+ui("poo")):isFeed(x)?(x.type==="breast"?"🤱 "+tr("Breast")+(x.min?" · "+x.min+" "+ui("minutes"):""):"🍼 "+tr("Bottle")+" · "+vol(x.ml||0)):(x.type==="sleep"?"😴 "+tr("Asleep"):"👀 "+tr("Awake")); return rows.length?logOrder(rows,rows.map(x=>`<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>${lab(x)}${x.dur?`<span class="dur"> · ${x.dur}</span>`:""}${by(x)}</span>${btns(x)}</div>`)):`<p class="hint" style="padding:6px 0">${ui("nothing")}</p>`; }
+function sheetRows(rows,ro){ const by=whoTag; const btns=x=>ro?`<span></span>`:`<button class="x" data-delfeed="${x.id}" title="${ui("del")}" aria-label="${ui("del")}">×</button>`; const rowOpen=x=>ro===true||!x.id?"":` data-editfeed="${x.id}" role="button"`; const lab=x=>isNappy(x)?(x.type==="pee"?"💧 "+ui("pee"):"💩 "+ui("poo")):isFeed(x)?(x.type==="breast"?"🤱 "+tr("Breast")+(x.min?" · "+x.min+" "+ui("minutes"):"")+(x.l||x.r?" · L "+(x.l||0)+" R "+(x.r||0):""):"🍼 "+tr("Bottle")+" · "+vol(x.ml||0)):(x.type==="sleep"?"😴 "+tr("Asleep"):"👀 "+tr("Awake")); return rows.length?logOrder(rows,rows.map(x=>`<div class="fl"${rowOpen(x)}><span class="t">${tD(x.t)}</span><span>${lab(x)}${x.dur?`<span class="dur"> · ${x.dur}</span>`:""}${by(x)}</span>${btns(x)}</div>`)):`<p class="hint" style="padding:6px 0">${ui("nothing")}</p>`; }
 /* ---------- This week ---------- */
 function lastFeedOn(d,goalH){ const fs=((L[d]&&L[d].entries)||[]).filter(isFeed).map(x=>toH(x.t)).filter(h=>Math.abs(h-goalH)<=3); return fs.length?fs.sort((p,q)=>Math.abs(p-goalH)-Math.abs(q-goalH))[0]:null; }   // the feed that landed nearest the planned last feed
 function weekAvg(today){ const ds=[...Array(7)].map((_,i)=>addDays(today,-7+i)); const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null; const gl=goals(ageDays(today)).last; const lasts=gl?ds.map(d=>lastFeedOn(d,toH(gl))).filter(x=>x!==null):[];
@@ -1538,6 +1543,47 @@ document.addEventListener("click", (e) => {
   else if (!t.dataset.upsell) U.hOff = 0;
 }, true);
 
+
+/* ── v0.20: left and right breastfeed timer. One timer at a time, kept on the device so it survives closing the app. ── */
+const bftGet = () => { if (U.bft === undefined) U.bft = lsGet("bb.bft", null); return U.bft && U.bft.c === U.child ? U.bft : null; };
+const bftMs = (b, side) => b[side] + (b.run === side ? Math.max(0, Date.now() - b.at) : 0);
+const mmss = (ms) => { const x = Math.floor(ms / 1000); return Math.floor(x / 60) + ":" + pad(x % 60); };
+const bftMin = (b) => Math.max(1, Math.min(90, Math.round((bftMs(b, "L") + bftMs(b, "R")) / 60000)));
+function bftSync() { const b = bftGet(); if (!b) return; U.tm = b.t0; if (b.run) U.min = bftMin(b); }
+function bftTap(side) {
+  const now = Date.now(); let b = bftGet();
+  if (!b) b = { c: U.child, L: 0, R: 0, run: null, at: 0, t0: nowHM() };
+  if (b.run) b[b.run] += Math.max(0, now - b.at);
+  b.run = b.run === side ? null : side; b.at = now;
+  U.bft = b; lsSet("bb.bft", b); U.min = bftMin(b); U.tm = b.t0; render();
+}
+function bftClear() { U.bft = null; lsSet("bb.bft", null); }
+function bftDone() { const b = bftGet(); if (!b) return {}; const l = Math.round(bftMs(b, "L") / 60000), r = Math.round(bftMs(b, "R") / 60000); bftClear(); return l || r ? { l, r } : {}; }
+function bftRow() {
+  const b = bftGet();
+  const btn = (side) => `<button class="bfs ${b && b.run === side ? "on" : ""}" data-bft="${side}"><b>${side === "L" ? "Left" : "Right"}</b><span data-bftv="${side}">${mmss(b ? bftMs(b, side) : 0)}</span><small>${b && b.run === side ? "Pause" : b && b[side] > 0 ? "Resume" : "Start"}</small></button>`;
+  return `<div class="bft">${btn("L")}${btn("R")}</div>`;
+}
+document.addEventListener("click", (e) => {
+  const t = e.target.closest && e.target.closest("[data-bft],[data-pickclose]");
+  if (!t) return;
+  if (t.dataset.bft) { syncTyped(); bftTap(t.dataset.bft); }
+  else if (U.pick && U.pick.mode === "breast" && !U.pick.edit) bftClear();
+}, true);
+setInterval(() => {
+  const b = bftGet(); if (!b || !b.run) return;
+  document.querySelectorAll("[data-bftv]").forEach((el) => { el.textContent = mmss(bftMs(b, el.dataset.bftv)); });
+  if (U.pick && U.pick.mode === "breast" && !U.pick.edit && bftMin(b) !== U.min) render();
+}, 1000);
+/* a timer left going (the form was closed by a reload) gets a prompt on Home to open it again */
+function suggestions(today, age) {
+  const guide = paid() && (age === null || age <= GUIDE_DAYS) ? suggestions0(today, age) : [];
+  const out = sleepPrompts(today, age), b = bftGet();
+  if (b && !(U.pick && U.pick.mode === "breast"))
+    out.unshift({ key: "bft" + b.t0, h: `Breastfeed timer ${b.run ? "running" : "paused"}`, t: `started ${tD(b.t0)}`, yesLabel: "Open", yes: () => { U.pick = { mode: "breast" }; U.pump = 0; U.logOpen = true; U.min = bftMin(b); render(); } });
+  return out.concat(guide);
+}
+
 /* ---------- wiring ---------- */
 A=Object.assign({v:1,members:[],children:[],plan:null,created:null},lsGet("bb.account",{}));
 U.me=lsGet("bb.me",null); U.signed=lsGet("bb.signed",false); U.applock=lsGet("bb.lock",false); U.lockedNow=!!U.applock; U.lang=lsGet("bb.lang","en"); U.bar=true; U.night=lsGet("bb.night",true); U.askState=null; U.alarm=lsGet("bb.alarm",false); U.pushSub=null; U.simple=true; U.logOpen=false; U.lead=lsGet("bb.lead",5); U.al={fired:null,n:0,snooze:0,dismiss:null}; U.chat=[]; U.speak=lsGet("bb.speak",false); U.busy=false;
@@ -1577,7 +1623,7 @@ document.body.addEventListener("click",e=>{ let b=e.target.closest("button"); if
     if(U.pick.mode==="sleep"||U.pick.mode==="wake"||U.pick.mode==="pee"||U.pick.mode==="poo"){ const md=U.pick.mode; if(!ed&&tm){ U.pick=null; addLog(md,{t:tm}); } else { if(ed&&tm){ ed.t=tm; touch(ed.id); } U.pick=null; saveDay(scheduleDate(bkkNow())); } }
     else if(U.pick.mode==="bottle"){ const v=U.ml; if(ed){ ed.ml=v; delete ed.min; ed.type="bottle"; if(tm) ed.t=tm; touch(ed.id); U.pick=null; saveDay(scheduleDate(bkkNow())); } else addLog("bottle",Object.assign({ml:v},tm?{t:tm}:{})); }
     else if(U.pick.mode==="solids"){ const ml=(SOLID.find(x=>x[0]===(U.portion||"medium"))||SOLID[1])[1]; if(ed){ ed.ml=ml; ed.portion=U.portion||"medium"; if(tm) ed.t=tm; touch(ed.id); U.pick=null; saveDay(scheduleDate(bkkNow())); } else addLog("solids",Object.assign({ml,portion:U.portion||"medium"},tm?{t:tm}:{})); }
-    else { const v=U.min||0; const pu=U.pump||0; if(ed){ ed.type="breast"; delete ed.ml; if(v) ed.min=v; else delete ed.min; if(pu) ed.pump=pu; else delete ed.pump; if(tm) ed.t=tm; touch(ed.id); U.pick=null; saveDay(scheduleDate(bkkNow())); } else addLog("breast",Object.assign(v?{min:v}:{},pu?{pump:pu}:{},tm?{t:tm}:{})); }
+    else { const v=U.min||0; const pu=U.pump||0; if(ed){ ed.type="breast"; delete ed.ml; if(v!==ed.min){ delete ed.l; delete ed.r; } if(v) ed.min=v; else delete ed.min; if(pu) ed.pump=pu; else delete ed.pump; if(tm) ed.t=tm; touch(ed.id); U.pick=null; saveDay(scheduleDate(bkkNow())); } else addLog("breast",Object.assign(v?{min:v}:{},pu?{pump:pu}:{},tm?{t:tm}:{},bftDone())); }
     if(ed&&tm){ const date=scheduleDate(bkkNow()), h=toH(ed.t); if(h>=24&&h>nowAbs()+0.02&&L[date]&&L[date].entries.includes(ed)){ const prev=addDays(date,-1); L[date].entries=L[date].entries.filter(x=>x!==ed); touch("del:"+ed.id); L[prev]=L[prev]||{date:prev,entries:[]}; L[prev].entries=[...L[prev].entries,ed]; touch(ed.id); saveDay(date); saveDay(prev); toast(U.lang==="th"?"ย้ายไปเช้านี้ (ก่อน 06:00)":"Moved to this morning · before 06:00"); } } }
   else if(d.skip){ addLog("skip",{key:d.skip}); }
   else if(b.hasAttribute("data-born")){ arriveOpen(); }
